@@ -21,10 +21,10 @@
   ansible.builtin.user:
     name: "{{ app_user }}"
     group: "{{ app_group }}"
-    home: "{{ app_directory }}"
+    home: "/var/lib/{{ app_user }}"
     shell: /usr/sbin/nologin
     system: true
-    create_home: false
+    create_home: true
 
 - name: Create the application directory
   ansible.builtin.file:
@@ -33,11 +33,6 @@
     owner: "{{ app_user }}"
     group: "{{ app_group }}"
     mode: "0755"
-
-- name: Remove temporary Ansible data from the application directory
-  ansible.builtin.file:
-    path: "{{ app_directory }}/.ansible"
-    state: absent
 
 - name: Clone or update the application repository
   ansible.builtin.git:
