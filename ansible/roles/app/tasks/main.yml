@@ -2,7 +2,6 @@
 - name: Install Node.js deployment packages
   ansible.builtin.apt:
     name:
-      - acl
       - git
       - nginx
       - nodejs
@@ -21,18 +20,19 @@
   ansible.builtin.user:
     name: "{{ app_user }}"
     group: "{{ app_group }}"
-    home: "/var/lib/{{ app_user }}"
+    home: "{{ app_directory }}"
     shell: /usr/sbin/nologin
     system: true
-    create_home: true
+    create_home: false
 
 - name: Create the application directory
   ansible.builtin.file:
     path: "{{ app_directory }}"
     state: directory
-    owner: "{{ app_user }}"
-    group: "{{ app_group }}"
+    owner: root
+    group: root
     mode: "0755"
+    recurse: true
 
 - name: Clone or update the application repository
   ansible.builtin.git:
@@ -40,7 +40,6 @@
     dest: "{{ app_directory }}"
     version: "{{ app_version }}"
     force: true
-  become_user: "{{ app_user }}"
   register: repository_checkout
   notify: Restart Node.js service
 
@@ -53,7 +52,6 @@
   ansible.builtin.command: npm ci --omit=dev
   args:
     chdir: "{{ app_directory }}"
-  become_user: "{{ app_user }}"
   changed_when: false
   when: repository_checkout.changed or not application_build.stat.exists
 
@@ -61,7 +59,6 @@
   ansible.builtin.command: npm run build
   args:
     chdir: "{{ app_directory }}"
-  become_user: "{{ app_user }}"
   when: repository_checkout.changed or not application_build.stat.exists
   notify: Restart Node.js service
 
