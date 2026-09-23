@@ -34,6 +34,11 @@
     group: "{{ app_group }}"
     mode: "0755"
 
+- name: Remove temporary Ansible data from the application directory
+  ansible.builtin.file:
+    path: "{{ app_directory }}/.ansible"
+    state: absent
+
 - name: Clone or update the application repository
   ansible.builtin.git:
     repo: "{{ app_repository }}"

@@ -55,6 +55,7 @@ jobs:
 
       - name: Deploy with Ansible
         env:
+          ANSIBLE_CONFIG: ansible/ansible.cfg
           ANSIBLE_HOST_KEY_CHECKING: "False"
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
