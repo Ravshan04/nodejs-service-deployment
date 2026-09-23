@@ -45,7 +45,6 @@
     repo: "{{ app_repository }}"
     dest: "{{ app_directory }}"
     version: "{{ app_version }}"
-    force: true
   register: repository_checkout
   notify: Restart Node.js service
 
