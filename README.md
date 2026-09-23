@@ -2,6 +2,10 @@
 
 Project URL: https://roadmap.sh/projects/nodejs-service-deployment
 
+[![Test and deploy](https://github.com/Ravshan04/nodejs-service-deployment/actions/workflows/deploy.yml/badge.svg)](https://github.com/Ravshan04/nodejs-service-deployment/actions/workflows/deploy.yml)
+
+Live service: http://54.194.155.56
+
 A dependency-free Node.js HTTP service deployed with Ansible and automatically
 released by GitHub Actions. Nginx exposes the service on port 80 while systemd
 keeps the Node.js process running on localhost port 3000.

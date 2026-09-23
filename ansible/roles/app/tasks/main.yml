@@ -32,6 +32,12 @@
     owner: root
     group: root
     mode: "0755"
+
+- name: Set application directory ownership
+  ansible.builtin.file:
+    path: "{{ app_directory }}"
+    owner: root
+    group: root
     recurse: true
 
 - name: Clone or update the application repository
