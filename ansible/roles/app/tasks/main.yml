@@ -25,6 +25,14 @@
     system: true
     create_home: false
 
+- name: Create the application directory
+  ansible.builtin.file:
+    path: "{{ app_directory }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0755"
+
 - name: Clone or update the application repository
   ansible.builtin.git:
     repo: "{{ app_repository }}"
