@@ -1,0 +1,19 @@
+---
+- name: Reload systemd
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+
+- name: Restart Node.js service
+  ansible.builtin.systemd_service:
+    name: "{{ app_name }}"
+    state: restarted
+
+- name: Validate nginx configuration
+  ansible.builtin.command: nginx -t
+  changed_when: false
+  listen: Reload nginx
+
+- name: Reload nginx
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded

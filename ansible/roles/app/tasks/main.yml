@@ -1,0 +1,119 @@
+---
+- name: Install Node.js deployment packages
+  ansible.builtin.apt:
+    name:
+      - git
+      - nginx
+      - nodejs
+      - npm
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Create the application group
+  ansible.builtin.group:
+    name: "{{ app_group }}"
+    system: true
+    state: present
+
+- name: Create the application user
+  ansible.builtin.user:
+    name: "{{ app_user }}"
+    group: "{{ app_group }}"
+    home: "{{ app_directory }}"
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: false
+
+- name: Clone or update the application repository
+  ansible.builtin.git:
+    repo: "{{ app_repository }}"
+    dest: "{{ app_directory }}"
+    version: "{{ app_version }}"
+    force: true
+  become_user: "{{ app_user }}"
+  register: repository_checkout
+  notify: Restart Node.js service
+
+- name: Check whether the application is built
+  ansible.builtin.stat:
+    path: "{{ app_directory }}/dist/server.js"
+  register: application_build
+
+- name: Install production dependencies
+  ansible.builtin.command: npm ci --omit=dev
+  args:
+    chdir: "{{ app_directory }}"
+  become_user: "{{ app_user }}"
+  changed_when: false
+  when: repository_checkout.changed or not application_build.stat.exists
+
+- name: Build the application
+  ansible.builtin.command: npm run build
+  args:
+    chdir: "{{ app_directory }}"
+  become_user: "{{ app_user }}"
+  when: repository_checkout.changed or not application_build.stat.exists
+  notify: Restart Node.js service
+
+- name: Install the systemd service
+  ansible.builtin.template:
+    src: nodejs-service.service.j2
+    dest: "/etc/systemd/system/{{ app_name }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart Node.js service
+
+- name: Install the Nginx reverse proxy
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: "/etc/nginx/sites-available/{{ app_name }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Enable the Nginx reverse proxy
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ app_name }}"
+    dest: "/etc/nginx/sites-enabled/{{ app_name }}"
+    state: link
+  notify: Reload nginx
+
+- name: Remove conflicting Nginx sites
+  ansible.builtin.file:
+    path: "/etc/nginx/sites-enabled/{{ item }}"
+    state: absent
+  loop:
+    - default
+    - roadmap-site
+  notify: Reload nginx
+
+- name: Enable and start the Node.js service
+  ansible.builtin.systemd_service:
+    name: "{{ app_name }}"
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Enable and start Nginx
+  ansible.builtin.service:
+    name: nginx
+    enabled: true
+    state: started
+
+- name: Apply pending service and proxy changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Verify the service through Nginx
+  ansible.builtin.uri:
+    url: http://127.0.0.1/health
+    status_code: 200
+    return_content: true
+  register: health_check
+  retries: 5
+  delay: 2
+  until: health_check.json.status == "ok"

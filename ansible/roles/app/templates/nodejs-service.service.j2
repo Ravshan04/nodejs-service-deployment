@@ -1,0 +1,23 @@
+[Unit]
+Description=Roadmap Node.js service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{ app_user }}
+Group={{ app_group }}
+WorkingDirectory={{ app_directory }}
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT={{ app_port }}
+ExecStart=/usr/bin/node {{ app_directory }}/dist/server.js
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target

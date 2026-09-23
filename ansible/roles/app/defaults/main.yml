@@ -1,0 +1,8 @@
+---
+app_name: nodejs-service
+app_user: nodeapp
+app_group: nodeapp
+app_directory: /opt/nodejs-service
+app_port: 3000
+app_repository: https://github.com/Ravshan04/nodejs-service-deployment.git
+app_version: main
