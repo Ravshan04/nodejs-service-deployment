@@ -1,6 +1,8 @@
 # Node.js Service Deployment
 
-Project URL: https://roadmap.sh/projects/nodejs-service-deployment
+Project page: [Node.js Service Deployment](https://roadmap.sh/projects/nodejs-service-deployment)
+
+Solution repository: https://github.com/Ravshan04/nodejs-service-deployment
 
 [![Test and deploy](https://github.com/Ravshan04/nodejs-service-deployment/actions/workflows/deploy.yml/badge.svg)](https://github.com/Ravshan04/nodejs-service-deployment/actions/workflows/deploy.yml)
 
